@@ -1,0 +1,14 @@
+[project]
+name = "adv-vs-others"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "graph-tools>=1.14",
+    "matplotlib>=3.10.8",
+    "networkx>=3.6.1",
+    "numpy>=2.4.1",
+    "perlcompat>=1.1",
+    "scipy>=1.17.0",
+]

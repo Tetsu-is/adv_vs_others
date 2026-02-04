@@ -1,0 +1,176 @@
+Final Mean Resilience Gains (with 95% CI):
+10% coverage:
+  AdvGreedy:        0.3702 0.0097
+  DegreeCentrality: 0.2618 0.0096
+  RandomSelect:     0.3853 0.0054
+20% coverage:
+  AdvGreedy:        0.4159 0.0066
+  DegreeCentrality: 0.2181 0.0042
+  RandomSelect:     0.4042 0.0038
+30% coverage:
+  AdvGreedy:        0.4495 0.0053
+  DegreeCentrality: 0.1733 0.0021
+  RandomSelect:     0.4164 0.0035
+40% coverage:
+  AdvGreedy:        0.4689 0.0043
+  DegreeCentrality: 0.1462 0.0012
+  RandomSelect:     0.4299 0.0035
+50% coverage:
+  AdvGreedy:        0.4967 0.0033
+  DegreeCentrality: 0.1402 0.0010
+  RandomSelect:     0.4406 0.0031
+Total execution time: 652.76 seconds
+Graph: graph/ba-n-1000.edges, BUDGET: 10, N_START_ATTEMPTS: 100, N_RW_ATTEMPTS: 100
+
+----
+AdvGreedy
+(coverage/mean/CI_width)
+5 0.3482 0.0079
+10 0.3472 0.0054
+20 0.3578 0.0044
+30 0.3702 0.0044
+40 0.3841 0.0043
+50 0.3972 0.0046
+DegreeCentrality
+(coverage/mean/CI_width)
+5 0.3119 0.0039
+10 0.3059 0.0008
+20 0.3032 0.0001
+30 0.3031 0.0001
+40 0.3031 0.0000
+50 0.3030 0.0000
+RandomSelect
+(coverage/mean/CI_width)
+5 0.3332 0.0058
+10 0.3330 0.0039
+20 0.3338 0.0027
+30 0.3358 0.0022
+40 0.3372 0.0023
+50 0.3403 0.0023
+Total execution time: 995.29 seconds
+Graph: graph/er-n-1000-p-0-0039.edges, BUDGET: 10, N_START_ATTEMPTS: 100, N_RW_ATTEMPTS: 100
+----------------------------------------------------------------------------------------------
+Final Mean Resilience Gains (with 95% CI):
+AdvGreedy
+(coverage/mean/CI_width)
+5 0.1757 0.0062
+10 0.1788 0.0053
+20 0.1845 0.0041
+30 0.1922 0.0035
+40 0.1997 0.0036
+50 0.2082 0.0037
+DegreeCentrality
+(coverage/mean/CI_width)
+5 0.1530 0.0007
+10 0.1517 0.0001
+20 0.1515 0.0000
+30 0.1515 0.0000
+40 0.1515 0.0000
+50 0.1515 0.0000
+RandomSelect
+(coverage/mean/CI_width)
+5 0.1662 0.0034
+10 0.1666 0.0024
+20 0.1672 0.0016
+30 0.1681 0.0015
+40 0.1686 0.0015
+50 0.1704 0.0018
+Total execution time: 1029.09 seconds
+Graph: graph/er-n-1000-p-0-0039.edges, BUDGET: 5, N_START_ATTEMPTS: 100, N_RW_ATTEMPTS: 100, RG_UPPER_BOUND: 33
+----------------------------------------------------------------------------------------------
+ER1000 b 10
+Using 8 workers for 100 start nodes
+Final Mean Resilience Gains (with 95% CI):
+AdvGreedy
+(coverage/mean/CI_width)
+5 0.2119 0.0039
+10 0.2083 0.0032
+20 0.2151 0.0028
+30 0.2232 0.0027
+40 0.2316 0.0024
+50 0.2399 0.0022
+DegreeCentrality
+(coverage/mean/CI_width)
+5 0.1871 0.0022
+10 0.1834 0.0007
+20 0.1819 0.0000
+30 0.1818 0.0000
+40 0.1819 0.0000
+50 0.1819 0.0000
+RandomSelect
+(coverage/mean/CI_width)
+5 0.2000 0.0038
+10 0.1998 0.0024
+20 0.2010 0.0015
+30 0.2014 0.0015
+40 0.2033 0.0013
+50 0.2041 0.0015
+Total execution time: 860.70 seconds
+Graph: graph/er-n-1000-p-0-0039.edges, BUDGET: 10, N_START_ATTEMPTS: 100, N_RW_ATTEMPTS: 100, RGUpperBound: 55
+----------------------------------------------------------------------------------------------
+BA1000 b 10
+Using 8 workers for 100 start nodes
+Final Mean Resilience Gains (with 95% CI):
+AdvGreedy
+(coverage/mean/CI_width)
+5 0.2481 0.0093
+10 0.2647 0.0074
+20 0.3011 0.0049
+30 0.3268 0.0040
+40 0.3418 0.0031
+50 0.3625 0.0025
+DegreeCentrality
+(coverage/mean/CI_width)
+5 0.2148 0.0102
+10 0.1961 0.0072
+20 0.1618 0.0033
+30 0.1278 0.0015
+40 0.1074 0.0009
+50 0.1030 0.0008
+RandomSelect
+(coverage/mean/CI_width)
+5 0.2685 0.0060
+10 0.2808 0.0038
+20 0.2950 0.0026
+30 0.3043 0.0026
+40 0.3127 0.0025
+50 0.3209 0.0023
+Total execution time: 850.17 seconds
+Graph: graph/ba-n-1000.edges, BUDGET: 10, N_START_ATTEMPTS: 100, N_RW_ATTEMPTS: 100, RGUpperBound: 188
+----------------------------------------------------------------------------------------------
+Using 8 workers for 100 start nodes
+Final Mean Resilience Gains (with 95% CI):
+AdvGreedy
+(coverage/mean/CI_width)
+5 0.2115 0.0037
+10 0.2079 0.0030
+20 0.2142 0.0028
+30 0.2214 0.0026
+40 0.2285 0.0026
+50 0.2369 0.0025
+DegreeCentrality
+(coverage/mean/CI_width)
+5 0.1874 0.0024
+10 0.1830 0.0004
+20 0.1819 0.0000
+30 0.1818 0.0000
+40 0.1819 0.0000
+50 0.1818 0.0000
+DegreeCentralityReverse
+(coverage/mean/CI_width)
+5 0.1979 0.0032
+10 0.1963 0.0026
+20 0.1987 0.0020
+30 0.1997 0.0025
+40 0.2047 0.0042
+50 0.2078 0.0048
+RandomSelect
+(coverage/mean/CI_width)
+5 0.1998 0.0036
+10 0.1991 0.0021
+20 0.2005 0.0015
+30 0.2011 0.0014
+40 0.2027 0.0013
+50 0.2033 0.0014
+Total execution time: 1128.72 seconds
+Graph: graph/er-n-1000-p-0-0039.edges, BUDGET: 10, N_START_ATTEMPTS: 100, N_RW_ATTEMPTS: 100, RGUpperBound: 55

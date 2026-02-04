@@ -3,7 +3,9 @@
     "allow": [
       "Bash(uv run:*)",
       "Bash(tree:*)",
-      "Bash(git worktree add:*)"
+      "Bash(git worktree add:*)",
+      "Bash(wc:*)",
+      "Bash(git branch:*)"
     ]
   }
 }

@@ -9,13 +9,14 @@ import numpy as np
 from multiprocessing import Pool, cpu_count
 from concurrent.futures import ThreadPoolExecutor
 import time
+import argparse
 import resilience_gain as rg
 
-# パラメータ
-GRAPH_PATH="graph/ba-n-1000.edges"
-BUDGET = 10  # アンカーノードのバジェット
-N_START_ATTEMPTS = 100  # 開始点選択の試行回数
-N_RW_ATTEMPTS = 100 # 各開始点からのRW試行回数
+# パラメータ（main()でargparseから設定される）
+GRAPH_PATH = None
+BUDGET = None
+N_START_ATTEMPTS = None
+N_RW_ATTEMPTS = None
 
 # グローバル変数（ワーカープロセスで共有）
 _graph_lines = None
@@ -86,7 +87,7 @@ def run_start_node(args):
                         reverse=True,
                     )[:budget]
                     return rg.resilience_gain(g, anchors)
-                
+
                 def calc_dcr():
                     anchors = sorted(
                         discovered_nodes,
@@ -123,6 +124,24 @@ def run_start_node(args):
 
 
 def main():
+    global GRAPH_PATH, BUDGET, N_START_ATTEMPTS, N_RW_ATTEMPTS
+
+    parser = argparse.ArgumentParser(description="Random walk resilience gain analysis")
+    parser.add_argument("--graph", type=str, default="graph/ba-n-1000.edges",
+                        help="グラフファイルのパス (default: graph/ba-n-1000.edges)")
+    parser.add_argument("--budget", type=int, default=10,
+                        help="アンカーノードのバジェット (default: 10)")
+    parser.add_argument("--n-start", type=int, default=100,
+                        help="開始点選択の試行回数 (default: 100)")
+    parser.add_argument("--n-rw", type=int, default=100,
+                        help="各開始点からのRW試行回数 (default: 100)")
+    args = parser.parse_args()
+
+    GRAPH_PATH = args.graph
+    BUDGET = args.budget
+    N_START_ATTEMPTS = args.n_start
+    N_RW_ATTEMPTS = args.n_rw
+
     start_time = time.perf_counter()
     os.makedirs("tmp", exist_ok=True)
     file = GRAPH_PATH
@@ -286,80 +305,3 @@ def calc_upper_rg_bound():
 
 if __name__ == "__main__":
     main()
-
-# results = pool.map(run_start_node, worker_args)の戻り値の例
-# results = [
-#     # ワーカー0 (開始ノード0) の戻り値
-#     (
-#         # results_AG
-#         {
-#             0: [0.12, 0.15],  # checkpoint 10%: RW試行2回分のresilience_gain
-#             1: [0.18, 0.22],  # checkpoint 20%: RW試行2回分
-#         },
-#         # results_DC
-#         {
-#             0: [0.08, 0.10],
-#             1: [0.14, 0.16],
-#         },
-#         # results_RS
-#         {
-#             0: [0.05, 0.07],
-#             1: [0.09, 0.11],
-#         },
-#     ),
-#     # ワーカー1 (開始ノード1) の戻り値
-#     (
-#         # results_AG
-#         {
-#             0: [0.11, 0.13],
-#             1: [0.20, 0.19],
-#         },
-#         # results_DC
-#         {
-#             0: [0.09, 0.12],
-#             1: [0.15, 0.17],
-#         },
-#         # results_RS
-#         {
-#             0: [0.04, 0.06],
-#             1: [0.10, 0.12],
-#         },
-#     ),
-# ]
-
-# # rw_attemptごとの平均を計算して詰め込む
-# def mean_over_rw_attempts(results_by_start):
-#     # INPUT
-#     # results_by_start = [
-#     #     [
-#     #         {0: [1.0, 2.0]},
-#     #         {1: [2.0, 3.0]},
-#     #         {2: [3.0, 4.0]},
-#     #     ],
-#     #     [
-#     #         {0: [2.0, 2.0]},
-#     #         {1: [3.0, 3.0]},
-#     #         {2: [4.0, 4.0]},
-#     #     ],
-#     # ]
-#     # OUTPUT
-#     # demo = [
-#     #     [
-#     #         {0: 1.5},
-#     #         {1: 2.5},
-#     #         {2: 3.5},
-#     #     ],
-#     #     [
-#     #         {0: 2.0},
-#     #         {1: 3.0},
-#     #         {2: 4.0},
-#     #     ],
-#     # ]
-#     results_mean_computed = []
-#     for result_by_start in results_by_start:
-#         mean_result = {}
-#         for i in range(n_checkpoints):
-#             mean_result[i] = mean_or_none(result_by_start[i])
-#         results_mean_computed.append(mean_result)
-
-#     return results_mean_computed

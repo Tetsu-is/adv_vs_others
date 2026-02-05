@@ -23,14 +23,18 @@ _graph_lines = None
 _checkpoints = None
 _n_checkpoints = None
 _g = None  # キャッシュされたグラフインスタンス
+_budget = None
+_n_rw_attempts = None
 
 
-def init_worker(graph_lines, checkpoints):
+def init_worker(graph_lines, checkpoints, budget, n_rw_attempts):
     """ワーカープロセスの初期化"""
-    global _graph_lines, _checkpoints, _n_checkpoints, _g
+    global _graph_lines, _checkpoints, _n_checkpoints, _g, _budget, _n_rw_attempts
     _graph_lines = graph_lines
     _checkpoints = checkpoints
     _n_checkpoints = len(checkpoints)
+    _budget = budget
+    _n_rw_attempts = n_rw_attempts
     # ワーカープロセスごとに1回だけグラフを構築
     _g = graph_tools.Graph(directed=False)
     _g.import_edge_list(_graph_lines)
@@ -52,7 +56,7 @@ def run_start_node(args):
     results_RS = {i: [] for i in range(_n_checkpoints)}
     results_DCR = {i: [] for i in range(_n_checkpoints)}
 
-    for rw_attempt in range(N_RW_ATTEMPTS):
+    for _ in range(_n_rw_attempts):
         agent = randomwalk.create_agent("SRW", graph=g, current=start, rng=rng)
         checkpoint_index = 0
 
@@ -64,7 +68,7 @@ def run_start_node(args):
                 discovered_graph = agent.get_discovered_graph_with_neighbors()
                 ## アンカー決定
                 edge_list = discovered_graph.export_edge_list()
-                budget = BUDGET
+                budget = _budget
                 discovered_nodes = discovered_graph.vertices()
 
                 # 3手法を並列実行
@@ -167,7 +171,7 @@ def main():
             g.delete_vertex(v)
 
     base_seed = 1
-    checkpoints = [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]  # Coverage checkpoints
+    checkpoints = [0.1, 0.2, 0.3, 0.4, 0.5]  # Coverage checkpoints
     n_checkpoints = len(checkpoints)
 
     # 各ワーカーに異なるシードを割り当て
@@ -181,7 +185,7 @@ def main():
     with Pool(
         processes=n_workers,  # ワーカープロセス数の指定
         initializer=init_worker,  # ワーカープロセスの初期化関数
-        initargs=(lines, checkpoints),
+        initargs=(lines, checkpoints, BUDGET, N_RW_ATTEMPTS),
     ) as pool:
         results = pool.map(run_start_node, worker_args)
 

@@ -5,7 +5,12 @@
       "Bash(tree:*)",
       "Bash(git worktree add:*)",
       "Bash(wc:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(__NEW_LINE_9c798279aa019179__ echo \"=== Test 1: 非連結グラフ ===\")",
+      "Bash(printf:*)",
+      "Bash(echo:*)",
+      "Bash(__NEW_LINE_4a375326a9517706__ echo \"\")",
+      "Bash(__NEW_LINE_bdb41743c30461ab__ echo \"\")"
     ]
   }
 }

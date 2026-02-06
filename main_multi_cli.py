@@ -127,6 +127,7 @@ def run_start_node(args):
     return results_AG, results_DC, results_RS, results_DCR
 
 
+# ==== main ====
 def main():
     global GRAPH_PATH, BUDGET, N_START_ATTEMPTS, N_RW_ATTEMPTS
 
@@ -150,7 +151,7 @@ def main():
     os.makedirs("tmp", exist_ok=True)
     file = GRAPH_PATH
 
-    RGUpperBound = calc_upper_rg_bound()
+    # RGUpperBound = calc_upper_rg_bound()
 
     # グラフデータを読み込み
     lines = []
@@ -166,9 +167,10 @@ def main():
     if not g.is_connected():
         print("===Graph is not connected. Using the largest connected component.===")
         gcc = g.maximal_component()
-        nodes_to_remove = set(g.vertices()) - set(gcc.vertices())
+        nodes_to_remove = set(g.vertices()) - gcc
         for v in nodes_to_remove:
             g.delete_vertex(v)
+        print(f"GCC size: {g.nvertices()} nodes, {g.nedges()} edges.")
 
     base_seed = 1
     checkpoints = [0.1, 0.2, 0.3, 0.4, 0.5]  # Coverage checkpoints
@@ -244,28 +246,28 @@ def main():
     print("AdvGreedy\n(coverage/mean/CI_width)")
     for i in range(n_checkpoints):
         print(
-            f"{int(checkpoints[i] * 100)} {mean_AG[i] / RGUpperBound:.4f} {(ci_upper_AG[i] - ci_lower_AG[i]) / RGUpperBound:.4f}"
+            f"{int(checkpoints[i] * 100)} {mean_AG[i]:.4f} {(ci_upper_AG[i] - ci_lower_AG[i]):.4f}"
         )
     print("DegreeCentrality\n(coverage/mean/CI_width)")
     for i in range(n_checkpoints):
         print(
-            f"{int(checkpoints[i] * 100)} {mean_DC[i] / RGUpperBound:.4f} {(ci_upper_DC[i] - ci_lower_DC[i]) / RGUpperBound:.4f}"
+            f"{int(checkpoints[i] * 100)} {mean_DC[i]:.4f} {(ci_upper_DC[i] - ci_lower_DC[i]):.4f}"
         )
     print("DegreeCentralityReverse\n(coverage/mean/CI_width)")
     for i in range(n_checkpoints):
         print(
-            f"{int(checkpoints[i] * 100)} {mean_DCR[i] / RGUpperBound:.4f} {(ci_upper_DCR[i] - ci_lower_DCR[i]) / RGUpperBound:.4f}"
+            f"{int(checkpoints[i] * 100)} {mean_DCR[i]:.4f} {(ci_upper_DCR[i] - ci_lower_DCR[i]):.4f}"
         )
     print("RandomSelect\n(coverage/mean/CI_width)")
     for i in range(n_checkpoints):
         print(
-            f"{int(checkpoints[i] * 100)} {mean_RS[i] / RGUpperBound:.4f} {(ci_upper_RS[i] - ci_lower_RS[i]) / RGUpperBound:.4f}"
+            f"{int(checkpoints[i] * 100)} {mean_RS[i]:.4f} {(ci_upper_RS[i] - ci_lower_RS[i]):.4f}"
         )
     end_time = time.perf_counter()
     print(f"Total execution time: {end_time - start_time:.2f} seconds")
     # 条件をプリントするグラフデータ、パラメータなど
     print(
-        f"Graph: {file}, BUDGET: {BUDGET}, N_START_ATTEMPTS: {N_START_ATTEMPTS}, N_RW_ATTEMPTS: {N_RW_ATTEMPTS}, RGUpperBound: {RGUpperBound}"
+        f"Graph: {file}, BUDGET: {BUDGET}, N_START_ATTEMPTS: {N_START_ATTEMPTS}, N_RW_ATTEMPTS: {N_RW_ATTEMPTS}"
     )
 
 

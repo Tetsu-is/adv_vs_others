@@ -7,6 +7,7 @@ import randomwalk
 import subprocess
 import numpy as np
 import scipy.stats as stats
+from multiprocessing import Pool, cpu_count
 
 def main():
     # ========== コマンドライン引数のパース ==========

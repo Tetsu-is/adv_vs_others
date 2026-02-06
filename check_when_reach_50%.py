@@ -2,9 +2,20 @@ import random
 import randomwalk
 import graph_tools
 import fileinput
+import argparse
 
 def main():
-    file = "graph/ba-n-500.edges"
+    parser = argparse.ArgumentParser(
+        description="Check When Random Walk Reaches 50% Coverage"
+    )
+    parser.add_argument(
+        "--graph",
+        type=str,
+        default="graph/ba-n-1000.edges",
+        help="Path to the graph file (default: graph/ba-n-1000.edges)",
+    )
+    args = parser.parse_args()
+    file = args.graph
     g = graph_tools.Graph(directed=False)
     lines = []
     for line in fileinput.input(files=(file,)):
@@ -16,25 +27,35 @@ def main():
 
     seed = 1
     rng = random.Random(seed)
+
+    checkpoints = [0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 0.9]  # Coverage checkpoints
+    # Store step counts for each checkpoint across all runs
+    checkpoint_steps = {cp: [] for cp in checkpoints}
+
     for i in range(10):
-        print(f"Run {i+1}:")
         start = rng.choice(list(g.vertices()))
         agent = randomwalk.create_agent("SRW", graph=g, current=start, rng=rng)
 
-        # 先にいくらくらいで被覆50%にいくのか知っときたい感ある    
+        # 先にいくらくらいで被覆50%にいくのか知っときたい感ある
         coverage = 0
         step = 0
-        checkpoints = [0.1, 0.2, 0.3, 0.4, 0.5]  # Coverage checkpoints
         checkpoint_index = 0
 
         while checkpoint_index < len(checkpoints):
             discoverd_nodes = agent.get_discovered_graph_with_neighbors()
             coverage = discoverd_nodes.nvertices() / g.nvertices()
             if coverage >= checkpoints[checkpoint_index]:
-                print(f"{int(checkpoints[checkpoint_index] * 100)}% coverage reached at step {step}")
+                current_checkpoint = checkpoints[checkpoint_index]
+                checkpoint_steps[current_checkpoint].append(step)
                 checkpoint_index += 1
             agent.advance()
             step += 1
+
+    # Calculate and display averages
+    print("\n=== Average Steps to Reach Coverage ===")
+    for cp in checkpoints:
+        avg_steps = sum(checkpoint_steps[cp]) / len(checkpoint_steps[cp])
+        print(f"{int(cp * 100)}% coverage: {avg_steps:.2f} steps (average)")
 
 if __name__ == "__main__":
     main()

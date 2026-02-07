@@ -27,9 +27,7 @@ def worker_task(args):
     for rw in range(n_rw):
         rw_results[rw] = {}
         # Run the random walk
-        agent = randomwalk.create_agent(
-            strategy, graph=g, current=start_point, rng=rng
-        )
+        agent = randomwalk.create_agent(strategy, graph=g, current=start_point, rng=rng)
         checkpoint_index = 0
         step = 0
         while checkpoint_index < n_checkpoints:
@@ -110,7 +108,7 @@ def main():
 
     # ========== 並列処理のタスク準備 ==========
     strategies = ["SRW", "NBRW", "VARW", "SARW"]
-    checkpoints = [10,30,50,70,100,150,200]  # 探索ステップのチェックポイント
+    checkpoints = [10, 40, 70, 100, 130, 160, 190, 210, 240, 270]  # 探索ステップのチェックポイント
     seed = 1
     rng = random.Random(seed)
 
@@ -152,12 +150,12 @@ def main():
         results[strategy][start_idx] = rw_results
 
     # ========== 結果表示 ==========
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Graph Path: {graph_path}")
     print(f"Budget: {budget}")
     print(f"Number of Start Points: {n_start}")
     print(f"Number of Random Walks per Start Point: {n_rw}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     for strategy in strategies:
         print(f"# {strategy}")
@@ -174,9 +172,7 @@ def main():
             # Step 2: 開始点分の平均と信頼区間を計算
             mean_resilience, ci_lower, ci_upper = compute_95_ci(start_averages)
 
-            print(
-                f"  Checkpoint {checkpoint}: Mean={mean_resilience:.4f}, 95% CI=[{ci_upper - ci_lower:.4f}]"
-            )
+            print(f"{checkpoint} {mean_resilience:.4f} {ci_upper - ci_lower:.4f}")
         print()
 
 

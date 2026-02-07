@@ -3,10 +3,42 @@ import randomwalk
 import graph_tools
 import fileinput
 import argparse
+from multiprocessing import Pool, cpu_count
+
+
+def run_single_walk(args):
+    """Run a single random walk experiment and return checkpoint steps."""
+    agent_type, graph_lines, start_node, seed, checkpoints = args
+
+    # Reconstruct graph for this process
+    g = graph_tools.Graph(directed=False)
+    g.import_edge_list(graph_lines)
+
+    rng = random.Random(seed)
+    agent = randomwalk.create_agent(agent_type, graph=g, current=start_node, rng=rng)
+
+    checkpoint_steps = {}
+
+    coverage = 0
+    step = 0
+    checkpoint_index = 0
+
+    while checkpoint_index < len(checkpoints):
+        discoverd_nodes = agent.get_discovered_graph_with_neighbors()
+        coverage = discoverd_nodes.nvertices() / g.nvertices()
+        if coverage >= checkpoints[checkpoint_index]:
+            current_checkpoint = checkpoints[checkpoint_index]
+            checkpoint_steps[current_checkpoint] = step
+            checkpoint_index += 1
+        agent.advance()
+        step += 1
+
+    return agent_type, checkpoint_steps
+
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Check When Random Walk Reaches 50% Coverage"
+        description="Check When Random Walk Reaches Coverage Checkpoints"
     )
     parser.add_argument(
         "--graph",
@@ -14,7 +46,25 @@ def main():
         default="graph/ba-n-1000.edges",
         help="Path to the graph file (default: graph/ba-n-1000.edges)",
     )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=10,
+        help="Number of runs per agent type (default: 10)",
+    )
+    parser.add_argument(
+        "--checkpoints",
+        type=str,
+        default="0.1,0.2,0.3",
+        help="Comma-separated coverage checkpoints to track (default: 0.1,0.2,0.3,0.4,0.5)",
+    )
     args = parser.parse_args()
+
+    # Parse checkpoints from comma-separated string
+    checkpoints = [float(cp.strip()) for cp in args.checkpoints.split(",")]
+    checkpoints.sort()  # Ensure they're in ascending order
+
+    # Load graph
     file = args.graph
     g = graph_tools.Graph(directed=False)
     lines = []
@@ -23,101 +73,81 @@ def main():
         lines.append(line)
 
     g.import_edge_list(lines)
-    # print(g.nvertices())
 
+    # Pre-generate starting nodes for consistency across agent types
     seed = 1
     rng = random.Random(seed)
+    start_nodes = [rng.choice(list(g.vertices())) for _ in range(args.runs)]
 
-    checkpoints = [0.1, 0.2, 0.3, 0.4, 0.5, 0.7, 0.9]  # Coverage checkpoints
-    # Store step counts for each checkpoint across all runs
-    checkpoint_steps = {cp: [] for cp in checkpoints}
+    # Agent types to compare
+    agent_types = ["SRW", "NBRW", "VARW", "SARW"]
 
-    for i in range(10):
-        start = rng.choice(list(g.vertices()))
-        agent = randomwalk.create_agent("SRW", graph=g, current=start, rng=rng)
+    print(f"🚀 Running {args.runs} experiments for each agent type in parallel...")
+    print(f"📊 Graph: {file} ({g.nvertices()} vertices)")
+    print(f"🔄 Agent types: {', '.join(agent_types)}")
+    print(f"📍 Checkpoints: {', '.join([f'{int(cp*100)}%' for cp in checkpoints])}\n")
 
-        # 先にいくらくらいで被覆50%にいくのか知っときたい感ある
-        coverage = 0
-        step = 0
-        checkpoint_index = 0
+    # Create all tasks (agent_type, graph_lines, start_node, seed, checkpoints) combinations
+    tasks = []
+    for agent_type in agent_types:
+        for i, start_node in enumerate(start_nodes):
+            # Use different seed for each run
+            task_seed = seed + i
+            tasks.append((agent_type, lines, start_node, task_seed, checkpoints))
 
-        while checkpoint_index < len(checkpoints):
-            discoverd_nodes = agent.get_discovered_graph_with_neighbors()
-            coverage = discoverd_nodes.nvertices() / g.nvertices()
-            if coverage >= checkpoints[checkpoint_index]:
-                current_checkpoint = checkpoints[checkpoint_index]
-                checkpoint_steps[current_checkpoint].append(step)
-                checkpoint_index += 1
-            agent.advance()
-            step += 1
+    # Run all tasks in a single flat pool (no nesting!)
+    with Pool(processes=cpu_count()) as pool:
+        all_results = pool.map(run_single_walk, tasks)
 
-    # Calculate and display averages
-    print("\n=== Average Steps to Reach Coverage ===")
+    # Aggregate results by agent type
+    results_dict = {
+        agent_type: {cp: [] for cp in checkpoints} for agent_type in agent_types
+    }
+
+    for agent_type, checkpoint_steps in all_results:
+        for cp, steps in checkpoint_steps.items():
+            results_dict[agent_type][cp].append(steps)
+
+    # Display results
+    print("=" * 80)
+    print("📈 AVERAGE STEPS TO REACH COVERAGE")
+    print("=" * 80)
+
+    # Print header
+    print(f"{'Coverage':<12}", end="")
+    for agent_type in agent_types:
+        print(f"{agent_type:<15}", end="")
+    print()
+    print("-" * 80)
+
+    # Print results for each checkpoint
     for cp in checkpoints:
-        avg_steps = sum(checkpoint_steps[cp]) / len(checkpoint_steps[cp])
-        print(f"{int(cp * 100)}% coverage: {avg_steps:.2f} steps (average)")
+        print(f"{int(cp * 100)}%{'':<9}", end="")
+        for agent_type in agent_types:
+            checkpoint_steps = results_dict[agent_type][cp]
+            avg_steps = sum(checkpoint_steps) / len(checkpoint_steps)
+            print(f"{avg_steps:<15.2f}", end="")
+        print()
+
+    print("=" * 80)
+
+    # Print comparison summary for the highest checkpoint
+    highest_cp = checkpoints[-1]
+    print(f"\n🏆 COMPARISON AT {int(highest_cp * 100)}% COVERAGE")
+    print("-" * 40)
+    results_highest = []
+    for agent_type in agent_types:
+        if results_dict[agent_type][highest_cp]:  # Check if data exists
+            avg_highest = sum(results_dict[agent_type][highest_cp]) / len(results_dict[agent_type][highest_cp])
+            results_highest.append((agent_type, avg_highest))
+
+    results_highest.sort(key=lambda x: x[1])
+    for rank, (agent_type, avg_steps) in enumerate(results_highest, 1):
+        emoji = (
+            "🥇" if rank == 1 else "🥈" if rank == 2 else "🥉" if rank == 3 else "📊"
+        )
+        print(f"{emoji} {rank}. {agent_type}: {avg_steps:.2f} steps")
+
 
 if __name__ == "__main__":
     main()
-
-# uv run main.py
-# Run 1:
-# 10% coverage reached at step 19
-# 20% coverage reached at step 39
-# 30% coverage reached at step 53
-# 40% coverage reached at step 54
-# 50% coverage reached at step 66
-# Run 2:
-# 10% coverage reached at step 1
-# 20% coverage reached at step 2
-# 30% coverage reached at step 8
-# 40% coverage reached at step 24
-# 50% coverage reached at step 40
-# Run 3:
-# 10% coverage reached at step 9
-# 20% coverage reached at step 19
-# 30% coverage reached at step 20
-# 40% coverage reached at step 42
-# 50% coverage reached at step 83
-# Run 4:
-# 10% coverage reached at step 6
-# 20% coverage reached at step 7
-# 30% coverage reached at step 20
-# 40% coverage reached at step 54
-# 50% coverage reached at step 93
-# Run 5:
-# 10% coverage reached at step 11
-# 20% coverage reached at step 31
-# 30% coverage reached at step 39
-# 40% coverage reached at step 52
-# 50% coverage reached at step 53
-# Run 6:
-# 10% coverage reached at step 10
-# 20% coverage reached at step 29
-# 30% coverage reached at step 36
-# 40% coverage reached at step 37
-# 50% coverage reached at step 63
-# Run 7:
-# 10% coverage reached at step 22
-# 20% coverage reached at step 23
-# 30% coverage reached at step 26
-# 40% coverage reached at step 34
-# 50% coverage reached at step 55
-# Run 8:
-# 10% coverage reached at step 4
-# 20% coverage reached at step 19
-# 30% coverage reached at step 24
-# 40% coverage reached at step 27
-# 50% coverage reached at step 56
-# Run 9:
-# 10% coverage reached at step 14
-# 20% coverage reached at step 24
-# 30% coverage reached at step 39
-# 40% coverage reached at step 53
-# 50% coverage reached at step 54
-# Run 10:
-# 10% coverage reached at step 7
-# 20% coverage reached at step 8
-# 30% coverage reached at step 14
-# 40% coverage reached at step 52
-# 50% coverage reached at step 80

@@ -1,3 +1,5 @@
+## ランダムウォークで得た部分グラフに対するアンカー決定手法としてAdvGreedy, DegreeCentrality, RandomSelect, DegreeCentralityReverseを比較するスクリプト
+
 import os
 import random
 import randomwalk

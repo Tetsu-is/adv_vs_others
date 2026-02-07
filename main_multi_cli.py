@@ -134,14 +134,24 @@ def main():
     global GRAPH_PATH, BUDGET, N_START_ATTEMPTS, N_RW_ATTEMPTS
 
     parser = argparse.ArgumentParser(description="Random walk resilience gain analysis")
-    parser.add_argument("--graph", type=str, default="graph/ba-n-1000.edges",
-                        help="グラフファイルのパス (default: graph/ba-n-1000.edges)")
-    parser.add_argument("--budget", type=int, default=10,
-                        help="アンカーノードのバジェット (default: 10)")
-    parser.add_argument("--n-start", type=int, default=100,
-                        help="開始点選択の試行回数 (default: 100)")
-    parser.add_argument("--n-rw", type=int, default=100,
-                        help="各開始点からのRW試行回数 (default: 100)")
+    parser.add_argument(
+        "--graph",
+        type=str,
+        default="graph/ba-n-1000.edges",
+        help="グラフファイルのパス (default: graph/ba-n-1000.edges)",
+    )
+    parser.add_argument(
+        "--budget",
+        type=int,
+        default=10,
+        help="アンカーノードのバジェット (default: 10)",
+    )
+    parser.add_argument(
+        "--n-start", type=int, default=100, help="開始点選択の試行回数 (default: 100)"
+    )
+    parser.add_argument(
+        "--n-rw", type=int, default=100, help="各開始点からのRW試行回数 (default: 100)"
+    )
     args = parser.parse_args()
 
     GRAPH_PATH = args.graph
@@ -175,7 +185,7 @@ def main():
         print(f"GCC size: {g.nvertices()} nodes, {g.nedges()} edges.")
 
     base_seed = 1
-    checkpoints = [0.1, 0.2, 0.3, 0.4, 0.5]  # Coverage checkpoints
+    checkpoints = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]  # Coverage checkpoints
     n_checkpoints = len(checkpoints)
 
     # 各ワーカーに異なるシードを割り当て
@@ -285,6 +295,7 @@ def compute_95_ci(data):
 
     return mean_x, CI_lower, CI_upper
 
+
 def calc_upper_rg_bound():
     """与えられたグラフに対してResilience Gainの上限値を計算して返す"""
     g = graph_tools.Graph(directed=False)
@@ -299,14 +310,14 @@ def calc_upper_rg_bound():
         ["./cpp/AdvGreedySelectAnchorStdIn", str(BUDGET)],
         input=edge_list,
         capture_output=True,
-        text=True
+        text=True,
     )
     if result.stderr:
         print(result.stderr)
     if result.returncode != 0:
         print(f"AdvGreedySelectAnchorStdIn failed with return code {result.returncode}")
         return None
-    anchors = result.stdout.strip().split('\n')
+    anchors = result.stdout.strip().split("\n")
     upperbound = rg.resilience_gain(g, anchors)
     return upperbound
 
